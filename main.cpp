@@ -1,20 +1,40 @@
 #include "main.h"
 #include "rc.h"
 #include <filesystem>
+#include <windows.h>
 
-void main_window::on_paint(HDC hdc) 
+void main_window::on_paint(HDC hdc)
 {
+	Gdiplus::Graphics graphics(hdc);
+	Gdiplus::Image image();
 }
 
 void main_window::on_command(int id) 
 {
 	switch (id) 
 	{
-		case ID_OPEN:
+		case ID_OPEN: {
+			TCHAR path[MAX_PATH];
+			ZeroMemory(path, sizeof(path));
+
+			TCHAR filter[] = _T("Image Files (*.jpeg; *.png; *.bmp; *.gif; *.tiff; *.emf)\0*.jpeg;*.png;*.bmp;*.gif;*.tiff;*.emf\0All Files (*.*)\0*.*\0\0");
+			OPENFILENAME ofn;
+			ZeroMemory(&ofn, sizeof(ofn));
+			ofn.lStructSize = sizeof(ofn);
+			ofn.lpstrFile = path;
+			ofn.nMaxFile = MAX_PATH;
+			ofn.lpstrFilter = filter;
+			if (GetOpenFileName(&ofn))
+			{
+				::Gdiplus::Image::FromFile;
+				InvalidateRect(*this, nullptr, true);
+			}
 			break;
-		case ID_EXIT:
+		}
+		case ID_EXIT: {
 			DestroyWindow(*this);
 			break;
+		}
 	}
 }
 
