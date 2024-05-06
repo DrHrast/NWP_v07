@@ -5,49 +5,50 @@
 #include <windows.h>
 
 using namespace Gdiplus;
-TCHAR* main_window::imageName = nullptr;
 
-void findImageName(std::wstring path) 
+tstring findImageName(std::wstring path) 
 {
 	//std::wstring imgp = path;
 	//size_t pos = imgp.find_first_of(L'\\');
 	//std::wstring temp = imgp.substr(pos + 1);
-	std::wstring temp = std::filesystem::path(path).filename().c_str();
-	size_t nameSize = temp.length() + 1;
-	TCHAR* temp2 = new TCHAR[nameSize];
-	main_window::imageName = temp2;
+	tstring temp = std::filesystem::path(path).filename();
+	return temp;
 }
 
-void drawStrings(HDC hdc, RECT rc)
+void drawStrings(HDC hdc, RECT rc, const TCHAR* imageName)
 {
 	Graphics graphics(hdc);
+	int length = lstrlen(imageName);
 	Font mainFont(L"Arial", 16);
 	Font shadowFont(L"Arial", 16);
-	RectF mainLayout(0.2f, 0.2f, 200.0f, 50.0f);
-	RectF shadowLayout(0.0f, 0.0f, 200.0f, 50.0f);
-	StringFormat format;
-	format.SetAlignment(StringAlignmentCenter);
-	SolidBrush mainBrush(Color(255, 255, 0, 0));
-	SolidBrush shadowBrush(Color(255, 255, 255, 0.5));
-	int length = lstrlen(main_window::imageName);
+	RectF mainLayout(static_cast<float>(rc.left), static_cast<float>(rc.top), static_cast<float>(rc.right), static_cast<float>(rc.bottom - 10));
+	//RectF shadowLayout(static_cast<float>(rc.left), static_cast<float>(rc.top), static_cast<float>(rc.right), static_cast<float>(rc.bottom - 10));
+	StringFormat mainFormat;
+	StringFormat shadowFormat;
+	mainFormat.SetAlignment(StringAlignmentCenter); mainFormat.SetLineAlignment(StringAlignmentFar);
+	shadowFormat.SetAlignment(StringAlignmentCenter); shadowFormat.SetLineAlignment(StringAlignmentFar);
+	SolidBrush mainBrush(Color(255, 115, 115, 115));
+	SolidBrush shadowBrush(Color(115, 255, 255, 255));
 
 	graphics.DrawString
 	(
-		main_window::imageName,
+		imageName,
 		length,
 		&shadowFont,
-		shadowLayout,
-		&format,
+		mainLayout,
+		&shadowFormat,
 		&shadowBrush
 	);
 	
+	mainLayout.Offset(2, -2);
+
 	graphics.DrawString
 	(
-		main_window::imageName,
+		imageName,
 		length,
 		&mainFont,
 		mainLayout,
-		&format,
+		&mainFormat,
 		&mainBrush
 	);
 }
@@ -59,7 +60,7 @@ void main_window::on_paint(HDC hdc)
 	Graphics graphics(hdc);
 	Pen pen(Color(255, 255, 0, 0), 2);
 	graphics.DrawImage(imagePath, 0, 0, rc.right, rc.bottom);
-	drawStrings(hdc, rc);
+	drawStrings(hdc, rc, imageName.c_str());
 }
 
 void main_window::on_command(int id) 
@@ -80,7 +81,7 @@ void main_window::on_command(int id)
 			if (GetOpenFileName(&ofn))
 			{
 				imagePath = Image::FromFile(path);
-				findImageName(path);
+				imageName = findImageName(path);
 				InvalidateRect(*this, nullptr, true);
 			}
 			break;
@@ -94,7 +95,6 @@ void main_window::on_command(int id)
 
 void main_window::on_destroy() 
 {
-	delete[] main_window::imageName;
 	delete main_window::imagePath;
 	::PostQuitMessage(0);
 }

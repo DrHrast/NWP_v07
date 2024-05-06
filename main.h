@@ -23,7 +23,7 @@ protected:
 	void on_command(int id) override;
 	void on_destroy() override;
 
-public:
+private:
 	Gdiplus::Image* imagePath = nullptr;
-	static TCHAR* imageName;
+	tstring imageName;
 };
