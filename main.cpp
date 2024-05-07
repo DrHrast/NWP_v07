@@ -8,9 +8,6 @@ using namespace Gdiplus;
 
 tstring findImageName(std::wstring path) 
 {
-	//std::wstring imgp = path;
-	//size_t pos = imgp.find_first_of(L'\\');
-	//std::wstring temp = imgp.substr(pos + 1);
 	tstring temp = std::filesystem::path(path).filename();
 	return temp;
 }
@@ -24,19 +21,17 @@ void drawStrings(HDC hdc, RECT rc, const TCHAR* imageName)
 	RectF mainLayout(static_cast<float>(rc.left), static_cast<float>(rc.top), static_cast<float>(rc.right), static_cast<float>(rc.bottom - 10));
 	//RectF shadowLayout(static_cast<float>(rc.left), static_cast<float>(rc.top), static_cast<float>(rc.right), static_cast<float>(rc.bottom - 10));
 	StringFormat mainFormat;
-	StringFormat shadowFormat;
 	mainFormat.SetAlignment(StringAlignmentCenter); mainFormat.SetLineAlignment(StringAlignmentFar);
-	shadowFormat.SetAlignment(StringAlignmentCenter); shadowFormat.SetLineAlignment(StringAlignmentFar);
 	SolidBrush mainBrush(Color(255, 115, 115, 115));
 	SolidBrush shadowBrush(Color(115, 255, 255, 255));
 
 	graphics.DrawString
 	(
 		imageName,
-		length,
+		-1,
 		&shadowFont,
 		mainLayout,
-		&shadowFormat,
+		&mainFormat,
 		&shadowBrush
 	);
 	
@@ -45,7 +40,7 @@ void drawStrings(HDC hdc, RECT rc, const TCHAR* imageName)
 	graphics.DrawString
 	(
 		imageName,
-		length,
+		-1,
 		&mainFont,
 		mainLayout,
 		&mainFormat,
@@ -58,8 +53,7 @@ void main_window::on_paint(HDC hdc)
 	RECT rc;
 	GetClientRect(*this, &rc);
 	Graphics graphics(hdc);
-	Pen pen(Color(255, 255, 0, 0), 2);
-	graphics.DrawImage(imagePath, 0, 0, rc.right, rc.bottom);
+	graphics.DrawImage(imagePath.get(), 0, 0, rc.right, rc.bottom);
 	drawStrings(hdc, rc, imageName.c_str());
 }
 
@@ -80,7 +74,8 @@ void main_window::on_command(int id)
 			ofn.lpstrFilter = filter;
 			if (GetOpenFileName(&ofn))
 			{
-				imagePath = Image::FromFile(path);
+				//imagePath = Image::FromFile(path);
+				imagePath = std::make_unique<Image>(path);
 				imageName = findImageName(path);
 				InvalidateRect(*this, nullptr, true);
 			}
@@ -95,7 +90,6 @@ void main_window::on_command(int id)
 
 void main_window::on_destroy() 
 {
-	delete main_window::imagePath;
 	::PostQuitMessage(0);
 }
 

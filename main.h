@@ -24,6 +24,6 @@ protected:
 	void on_destroy() override;
 
 private:
-	Gdiplus::Image* imagePath = nullptr;
+	std::unique_ptr<Gdiplus::Image> imagePath;
 	tstring imageName;
 };
